@@ -6,13 +6,16 @@ export const api = authService.getAxiosInstance();
 // Placements API base (relative to API_BASE_URL in auth service)
 // Use only explicit env. If not set, we default to mock mode to avoid noisy 404s.
 const PLACEMENTS_BASE = (import.meta as any)?.env?.VITE_PLACEMENTS_BASE || '';
+const BACKEND_DISABLED = !PLACEMENTS_BASE;
 
 // Fallback candidates to handle different backends without local env changes
 const PLACEMENTS_BASE_CANDIDATES: string[] = Array.from(new Set([PLACEMENTS_BASE])).filter(Boolean) as string[];
 
 // Cache resolved base to avoid repeated failing requests
 let resolvedPlacementsBase: string | null = null;
-let backendUnavailable = false;
+let backendUnavailable = BACKEND_DISABLED;
+
+export const isBackendAvailable = (): boolean => !BACKEND_DISABLED && !backendUnavailable;
 
 async function ensureResolvedBase(): Promise<string | null> {
   if (resolvedPlacementsBase) return resolvedPlacementsBase;
@@ -134,6 +137,14 @@ async function apiGetFirst<T>(paths: string[], tail: string, config?: any): Prom
     if (tail.includes('companies')) {
       console.info('🏢 Using mock companies data (backend unavailable)');
       return MOCK_COMPANIES as T;
+    }
+    if (tail.includes('applications')) {
+      console.info('📄 Using mock applications data (backend unavailable)');
+      return (Array.isArray(MOCK_APPLICATIONS) ? MOCK_APPLICATIONS : { results: MOCK_APPLICATIONS }) as T;
+    }
+    if (tail.includes('offers')) {
+      console.info('🎯 Using mock offers data (backend unavailable)');
+      return (Array.isArray(MOCK_OFFERS) ? MOCK_OFFERS : { results: MOCK_OFFERS }) as T;
     }
   }
   const tryList = preferred ? [preferred] : paths;
