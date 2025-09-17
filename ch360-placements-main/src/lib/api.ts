@@ -121,6 +121,49 @@ const MOCK_OFFERS = [
   },
 ];
 
+// Additional mocks for non-placement list pages
+const MOCK_STATISTICS_OVERVIEW = {
+  overview: {
+    total_students: 1200,
+    placed_students: 876,
+    placement_percentage: 73,
+    average_salary: 850000,
+    highest_salary: 2400000,
+  },
+};
+
+const MOCK_STATISTICS: any[] = [
+  { id: 1, academic_year: '2023-24', department_id: 1, program_id: 1, placed_students: 320, average_salary: 780000 },
+  { id: 2, academic_year: '2022-23', department_id: 1, program_id: 1, placed_students: 290, average_salary: 740000 },
+];
+
+const MOCK_FEEDBACKS: any[] = [
+  { id: 1, company: { name: 'Tech Corp' }, overall_rating: 4.6, student_quality_rating: 4.5, positive_feedback: 'Great fundamentals', would_visit_again: true },
+  { id: 2, company: { name: 'Data Solutions' }, overall_rating: 4.2, student_quality_rating: 4.0, positive_feedback: 'Good attitude', would_visit_again: true },
+];
+
+const MOCK_DOCUMENTS: any[] = [
+  { id: 1, title: 'Placement Policy 2025', category: 'Policy', version: 'v1.0', file_url: '#' },
+  { id: 2, title: 'NIRF Report Summary', category: 'Report', version: 'v2.1', file_url: '#' },
+];
+
+const MOCK_ALUMNI: any[] = [
+  { id: 1, student_id: 1, current_company: 'Tech Corp', current_designation: 'SDE', students_mentor: true },
+  { id: 2, student_id: 2, current_company: 'Data Solutions', current_designation: 'Data Analyst' },
+];
+
+const MOCK_ANALYTICS_TRENDS = { trends: [
+  { year: '2021', placed: 650, average_salary: 600000 },
+  { year: '2022', placed: 720, average_salary: 680000 },
+  { year: '2023', placed: 810, average_salary: 740000 },
+]};
+
+const MOCK_NIRF = { nirf_metrics: [
+  { metric: 'Graduation Outcomes', value: 85 },
+  { metric: 'Teaching', value: 78 },
+  { metric: 'Research', value: 72 },
+]};
+
 // Try a list of URLs and return the first successful response's data
 async function apiGetFirst<T>(paths: string[], tail: string, config?: any): Promise<T> {
   let lastErr: any = null;
@@ -350,7 +393,8 @@ export interface ApplicationDto {
 
 export const applicationsApi = {
   getAll: async (config?: any) => {
-    const data = await apiGet<any>(`${PLACEMENTS_BASE}/applications/`, config);
+    // Use apiGetFirst so we gracefully fallback to mock data when backend is unavailable
+    const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'applications/', config);
     if (Array.isArray(data)) return data as ApplicationDto[];
     if (data && Array.isArray(data.results)) return data.results as ApplicationDto[];
     return [] as ApplicationDto[];
@@ -476,7 +520,7 @@ export interface OfferDto {
 
 export const offersApi = {
   getAll: async (config?: any) => {
-    const data = await apiGet<any>(`${PLACEMENTS_BASE}/offers/`, config);
+    const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'offers/', config);
     if (Array.isArray(data)) return data as OfferDto[];
     if (data && Array.isArray(data.results)) return data.results as OfferDto[];
     return [] as OfferDto[];
@@ -513,16 +557,27 @@ export interface StatisticsDto {
 
 export const statisticsApi = {
   getAll: async (config?: any) => {
-    const data = await apiGet<any>(`${PLACEMENTS_BASE}/statistics/`, config);
-    if (Array.isArray(data)) return data as StatisticsDto[];
-    if (data && Array.isArray(data.results)) return data.results as StatisticsDto[];
-    return [] as StatisticsDto[];
+    try {
+      const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'statistics/', config);
+      if (Array.isArray(data)) return data as StatisticsDto[];
+      if (data && Array.isArray(data.results)) return data.results as StatisticsDto[];
+      return [] as StatisticsDto[];
+    } catch {
+      return MOCK_STATISTICS as any;
+    }
   },
-  getById: (id: number | string) => apiGet<StatisticsDto>(`${PLACEMENTS_BASE}/statistics/${id}/`),
+  getById: (id: number | string) => apiGetFirst<StatisticsDto>(PLACEMENTS_BASE_CANDIDATES, `statistics/${id}/`),
   create: (data: Partial<StatisticsDto>) => apiPost<StatisticsDto>(`${PLACEMENTS_BASE}/statistics/`, data),
   update: (id: number | string, data: Partial<StatisticsDto>) => apiPatch<StatisticsDto>(`${PLACEMENTS_BASE}/statistics/${id}/`, data),
   delete: (id: number | string) => apiDelete<void>(`${PLACEMENTS_BASE}/statistics/${id}/`),
-  getOverview: () => apiGet<any>(`${PLACEMENTS_BASE}/statistics/overview/`),
+  getOverview: async () => {
+    try {
+      const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'statistics/overview/');
+      return data;
+    } catch {
+      return MOCK_STATISTICS_OVERVIEW;
+    }
+  },
 };
 
 // =========
@@ -550,12 +605,16 @@ export interface FeedbackDto {
 
 export const feedbacksApi = {
   getAll: async (config?: any) => {
-    const data = await apiGet<any>(`${PLACEMENTS_BASE}/feedbacks/`, config);
-    if (Array.isArray(data)) return data as FeedbackDto[];
-    if (data && Array.isArray(data.results)) return data.results as FeedbackDto[];
-    return [] as FeedbackDto[];
+    try {
+      const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'feedbacks/', config);
+      if (Array.isArray(data)) return data as FeedbackDto[];
+      if (data && Array.isArray(data.results)) return data.results as FeedbackDto[];
+      return [] as FeedbackDto[];
+    } catch {
+      return MOCK_FEEDBACKS as any;
+    }
   },
-  getById: (id: number | string) => apiGet<FeedbackDto>(`${PLACEMENTS_BASE}/feedbacks/${id}/`),
+  getById: (id: number | string) => apiGetFirst<FeedbackDto>(PLACEMENTS_BASE_CANDIDATES, `feedbacks/${id}/`),
   create: (data: Partial<FeedbackDto>) => apiPost<FeedbackDto>(`${PLACEMENTS_BASE}/feedbacks/`, data),
   update: (id: number | string, data: Partial<FeedbackDto>) => apiPatch<FeedbackDto>(`${PLACEMENTS_BASE}/feedbacks/${id}/`, data),
   delete: (id: number | string) => apiDelete<void>(`${PLACEMENTS_BASE}/feedbacks/${id}/`),
@@ -585,12 +644,16 @@ export interface DocumentDto {
 
 export const documentsApi = {
   getAll: async (config?: any) => {
-    const data = await apiGet<any>(`${PLACEMENTS_BASE}/documents/`, config);
-    if (Array.isArray(data)) return data as DocumentDto[];
-    if (data && Array.isArray(data.results)) return data.results as DocumentDto[];
-    return [] as DocumentDto[];
+    try {
+      const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'documents/', config);
+      if (Array.isArray(data)) return data as DocumentDto[];
+      if (data && Array.isArray(data.results)) return data.results as DocumentDto[];
+      return [] as DocumentDto[];
+    } catch {
+      return MOCK_DOCUMENTS as any;
+    }
   },
-  getById: (id: number | string) => apiGet<DocumentDto>(`${PLACEMENTS_BASE}/documents/${id}/`),
+  getById: (id: number | string) => apiGetFirst<DocumentDto>(PLACEMENTS_BASE_CANDIDATES, `documents/${id}/`),
   create: (data: Partial<DocumentDto>) => {
     const form = new FormData();
     Object.entries(data || {}).forEach(([k, v]) => {
@@ -645,26 +708,47 @@ export interface AlumniDto {
 
 export const alumniApi = {
   getAll: async (config?: any) => {
-    const data = await apiGet<any>(`${PLACEMENTS_BASE}/alumni/`, config);
-    if (Array.isArray(data)) return data as AlumniDto[];
-    if (data && Array.isArray(data.results)) return data.results as AlumniDto[];
-    return [] as AlumniDto[];
+    try {
+      const data = await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'alumni/', config);
+      if (Array.isArray(data)) return data as AlumniDto[];
+      if (data && Array.isArray(data.results)) return data.results as AlumniDto[];
+      return [] as AlumniDto[];
+    } catch {
+      return MOCK_ALUMNI as any;
+    }
   },
-  getById: (id: number | string) => apiGet<AlumniDto>(`${PLACEMENTS_BASE}/alumni/${id}/`),
+  getById: (id: number | string) => apiGetFirst<AlumniDto>(PLACEMENTS_BASE_CANDIDATES, `alumni/${id}/`),
   create: (data: Partial<AlumniDto>) => apiPost<AlumniDto>(`${PLACEMENTS_BASE}/alumni/`, data),
   update: (id: number | string, data: Partial<AlumniDto>) => apiPatch<AlumniDto>(`${PLACEMENTS_BASE}/alumni/${id}/`, data),
   delete: (id: number | string) => apiDelete<void>(`${PLACEMENTS_BASE}/alumni/${id}/`),
-  getAlumniNetwork: () => apiGet<any>(`${PLACEMENTS_BASE}/alumni/alumni-network/`),
+  getAlumniNetwork: async () => {
+    try {
+      return await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'alumni/alumni-network/');
+    } catch {
+      return { statistics: { total: 200, willing_to_mentor: 58, willing_to_recruit: 24 } };
+    }
+  },
 };
 
 // =========
 // Analytics & Reporting API (NEW)
 // =========
 export const analyticsApi = {
-  getTrends: (years?: string[]) => apiGet<any>(`${PLACEMENTS_BASE}/analytics/trends/${
-    years && years.length ? `?${years.map(y => `years=${encodeURIComponent(y)}`).join('&')}` : ''
-  }`),
-  getNirfReport: () => apiGet<any>(`${PLACEMENTS_BASE}/analytics/nirf-report/`),
+  getTrends: async (years?: string[]) => {
+    try {
+      const q = years && years.length ? `?${years.map(y => `years=${encodeURIComponent(y)}`).join('&')}` : '';
+      return await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, `analytics/trends/${q}`);
+    } catch {
+      return MOCK_ANALYTICS_TRENDS;
+    }
+  },
+  getNirfReport: async () => {
+    try {
+      return await apiGetFirst<any>(PLACEMENTS_BASE_CANDIDATES, 'analytics/nirf-report/');
+    } catch {
+      return MOCK_NIRF;
+    }
+  },
 };
 
 // =========
@@ -683,6 +767,11 @@ export interface StudentDto {
 export const studentsApi = {
   // Tries placements students first, then common users path as fallback
   search: async (query: string) => {
+    const preferred = await ensureResolvedBase();
+    if (!preferred) {
+      // Backend disabled/offline: don't make network calls
+      return [] as StudentDto[];
+    }
     const tryPaths = [
       `${PLACEMENTS_BASE}/students/`,
       `/api/v1/users/students/`,

@@ -1,23 +1,86 @@
-import { useState } from "react"
-import { Plus, Users, Calendar, MapPin, Clock, Star, Search } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Plus, Users, Calendar, MapPin, Clock, Star, Search, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+// Mock workshop data
+const MOCK_WORKSHOPS = [
+  {
+    id: 1,
+    title: "Resume Building & Interview Skills",
+    speaker: "Dr. Sarah Johnson",
+    status: "upcoming",
+    date: "2024-02-15",
+    time: "10:00 AM - 12:00 PM",
+    location: "Auditorium A",
+    maxParticipants: 100,
+    currentParticipants: 67,
+    rating: 4.7,
+    description: "Learn how to create compelling resumes and ace job interviews",
+    topics: ["Resume Writing", "Interview Techniques", "Body Language", "Salary Negotiation"]
+  },
+  {
+    id: 2,
+    title: "Tech Industry Trends 2024",
+    speaker: "Mr. Rajesh Kumar",
+    status: "ongoing",
+    date: "2024-02-10",
+    time: "2:00 PM - 4:00 PM",
+    location: "Conference Room B",
+    maxParticipants: 50,
+    currentParticipants: 50,
+    rating: 4.9,
+    description: "Explore the latest trends in technology and their impact on careers",
+    topics: ["AI/ML", "Cloud Computing", "Cybersecurity", "Blockchain"]
+  },
+  {
+    id: 3,
+    title: "Entrepreneurship & Startups",
+    speaker: "Ms. Priya Sharma",
+    status: "completed",
+    date: "2024-02-05",
+    time: "3:00 PM - 5:00 PM",
+    location: "Seminar Hall",
+    maxParticipants: 80,
+    currentParticipants: 72,
+    rating: 4.6,
+    description: "Learn the fundamentals of starting your own business",
+    topics: ["Business Planning", "Funding", "Marketing", "Legal Aspects"]
+  },
+  {
+    id: 4,
+    title: "Digital Marketing Masterclass",
+    speaker: "Mr. Amit Patel",
+    status: "upcoming",
+    date: "2024-02-20",
+    time: "11:00 AM - 1:00 PM",
+    location: "Computer Lab 1",
+    maxParticipants: 60,
+    currentParticipants: 45,
+    rating: 4.8,
+    description: "Master digital marketing strategies for modern businesses",
+    topics: ["SEO", "Social Media", "Content Marketing", "Analytics"]
+  }
+]
 
 export default function Workshops() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
 
-  const workshops: Array<any> = []
-  const filteredWorkshops = workshops.filter(workshop => {
-    const matchesSearch = workshop.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         workshop.speaker.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = filterStatus === "all" || workshop.status === filterStatus
-    return matchesSearch && matchesStatus
-  })
+  const filteredWorkshops = useMemo(() => {
+    return MOCK_WORKSHOPS.filter(workshop => {
+      const matchesSearch = 
+        String(workshop.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(workshop.speaker || '').toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus = filterStatus === "all" || workshop.status === filterStatus
+      return matchesSearch && matchesStatus
+    })
+  }, [searchTerm, filterStatus])
 
-  const statuses = ["all"]
+  const statuses = ["all", "upcoming", "ongoing", "completed"]
 
   return (
     <div className="space-y-6">
@@ -43,17 +106,18 @@ export default function Workshops() {
           </div>
         </div>
         <div className="flex gap-2">
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground dark:text-white"
-          >
-            {statuses.map(status => (
-              <option key={status} value={status}>
-                {status === "all" ? "All Status" : status.charAt(0).toUpperCase() + status.slice(1)}
-              </option>
-            ))}
-          </select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statuses.map(status => (
+                <SelectItem key={status} value={status}>
+                  {status === "all" ? "All Status" : status.charAt(0).toUpperCase() + status.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             Schedule Workshop
@@ -80,8 +144,15 @@ export default function Workshops() {
                     <span>{workshop.location}</span>
                   </div>
                 </div>
-                <Badge variant="outline" className="ml-2">
-                  {workshop.status}
+                <Badge 
+                  variant="outline" 
+                  className={`ml-2 ${
+                    workshop.status === 'upcoming' ? 'border-blue-500 text-blue-600' :
+                    workshop.status === 'ongoing' ? 'border-green-500 text-green-600' :
+                    'border-gray-500 text-gray-600'
+                  }`}
+                >
+                  {workshop.status.charAt(0).toUpperCase() + workshop.status.slice(1)}
                 </Badge>
               </div>
             </CardHeader>
@@ -89,7 +160,7 @@ export default function Workshops() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Calendar className="h-4 w-4" />
-                  <span>{workshop.date}</span>
+                  <span>{new Date(workshop.date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Clock className="h-4 w-4" />
@@ -97,11 +168,11 @@ export default function Workshops() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Users className="h-4 w-4" />
-                  <span>{workshop.participants}/{workshop.maxParticipants}</span>
+                  <span>{workshop.currentParticipants}/{workshop.maxParticipants}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Star className="h-4 w-4" />
-                  <span>{workshop.duration}</span>
+                  <span>{workshop.rating}/5</span>
                 </div>
               </div>
               
@@ -109,12 +180,30 @@ export default function Workshops() {
                 {workshop.description}
               </p>
 
+              <div className="flex flex-wrap gap-1 mb-3">
+                {workshop.topics.slice(0, 3).map((topic: string) => (
+                  <Badge key={topic} variant="secondary" className="text-xs">
+                    {topic}
+                  </Badge>
+                ))}
+                {workshop.topics.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{workshop.topics.length - 3} more
+                  </Badge>
+                )}
+              </div>
+
               <div className="flex items-center justify-between pt-2">
                 <span className="text-xs text-muted-foreground dark:text-white/50">
-                  {workshop.maxParticipants - workshop.participants} spots left
+                  {workshop.maxParticipants - workshop.currentParticipants} spots left
                 </span>
-                <Button variant="outline" size="sm">
-                  Register Now
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={workshop.status === 'completed' || workshop.currentParticipants >= workshop.maxParticipants}
+                >
+                  {workshop.status === 'completed' ? 'Completed' : 
+                   workshop.currentParticipants >= workshop.maxParticipants ? 'Full' : 'Register Now'}
                 </Button>
               </div>
             </CardContent>

@@ -1,23 +1,90 @@
-import { useState } from "react"
-import { Plus, BookOpen, Users, Clock, MapPin, Calendar, Star, Search } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Plus, BookOpen, Users, Clock, MapPin, Calendar, Star, Search, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+// Mock training data
+const MOCK_TRAININGS = [
+  {
+    id: 1,
+    title: "Full Stack Web Development",
+    provider: "Tech Academy",
+    type: "online",
+    duration: "3 months",
+    level: "Beginner",
+    rating: 4.8,
+    students: 1250,
+    price: 15000,
+    description: "Learn modern web development with React, Node.js, and MongoDB",
+    skills: ["React", "Node.js", "MongoDB", "JavaScript"],
+    startDate: "2024-02-01",
+    isActive: true
+  },
+  {
+    id: 2,
+    title: "Data Science & Machine Learning",
+    provider: "Data Institute",
+    type: "hybrid",
+    duration: "6 months",
+    level: "Intermediate",
+    rating: 4.6,
+    students: 890,
+    price: 25000,
+    description: "Master data science and machine learning with Python and TensorFlow",
+    skills: ["Python", "TensorFlow", "Pandas", "Scikit-learn"],
+    startDate: "2024-03-15",
+    isActive: true
+  },
+  {
+    id: 3,
+    title: "Cloud Computing with AWS",
+    provider: "Cloud Masters",
+    type: "online",
+    duration: "2 months",
+    level: "Advanced",
+    rating: 4.9,
+    students: 2100,
+    price: 20000,
+    description: "Comprehensive AWS cloud computing certification program",
+    skills: ["AWS", "Docker", "Kubernetes", "DevOps"],
+    startDate: "2024-01-20",
+    isActive: true
+  },
+  {
+    id: 4,
+    title: "Mobile App Development",
+    provider: "App Academy",
+    type: "offline",
+    duration: "4 months",
+    level: "Beginner",
+    rating: 4.5,
+    students: 650,
+    price: 18000,
+    description: "Build iOS and Android apps with React Native and Flutter",
+    skills: ["React Native", "Flutter", "Firebase", "Mobile UI/UX"],
+    startDate: "2024-04-01",
+    isActive: true
+  }
+]
 
 export default function Trainings() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterMode, setFilterMode] = useState("all")
 
-  const trainings: Array<any> = []
-  const filteredTrainings = trainings.filter(training => {
-    const matchesSearch = training.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         training.provider.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesMode = filterMode === "all" || training.type === filterMode
-    return matchesSearch && matchesMode
-  })
+  const filteredTrainings = useMemo(() => {
+    return MOCK_TRAININGS.filter(training => {
+      const matchesSearch = 
+        String(training.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(training.provider || '').toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesMode = filterMode === "all" || training.type === filterMode
+      return matchesSearch && matchesMode
+    })
+  }, [searchTerm, filterMode])
 
-  const modes = ["all"]
+  const modes = ["all", "online", "offline", "hybrid"]
 
   return (
     <div className="space-y-6">
@@ -43,17 +110,18 @@ export default function Trainings() {
           </div>
         </div>
         <div className="flex gap-2">
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value)}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground dark:text-white"
-          >
-            {modes.map(mode => (
-              <option key={mode} value={mode}>
-                {mode === "all" ? "All Modes" : mode}
-              </option>
-            ))}
-          </select>
+          <Select value={filterMode} onValueChange={setFilterMode}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Mode" />
+            </SelectTrigger>
+            <SelectContent>
+              {modes.map(mode => (
+                <SelectItem key={mode} value={mode}>
+                  {mode === "all" ? "All Modes" : mode.charAt(0).toUpperCase() + mode.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             Add Training
@@ -77,11 +145,11 @@ export default function Trainings() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-white/60">
                     <MapPin className="h-4 w-4" />
-                    <span>{training.type}</span>
+                    <span>{training.type.charAt(0).toUpperCase() + training.type.slice(1)}</span>
                   </div>
                 </div>
                 <Badge variant="outline" className="ml-2">
-                  {training.status}
+                  {training.level}
                 </Badge>
               </div>
             </CardHeader>
@@ -93,15 +161,15 @@ export default function Trainings() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Calendar className="h-4 w-4" />
-                  <span>{training.startDate}</span>
+                  <span>{new Date(training.startDate).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Users className="h-4 w-4" />
-                  <span>{training.participants}/{training.maxParticipants}</span>
+                  <span>{training.students} enrolled</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
                   <Star className="h-4 w-4" />
-                  <span>{training.status}</span>
+                  <span>{training.rating}/5</span>
                 </div>
               </div>
               
@@ -109,9 +177,22 @@ export default function Trainings() {
                 {training.description}
               </p>
 
+              <div className="flex flex-wrap gap-1 mb-3">
+                {training.skills.slice(0, 3).map((skill: string) => (
+                  <Badge key={skill} variant="secondary" className="text-xs">
+                    {skill}
+                  </Badge>
+                ))}
+                {training.skills.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{training.skills.length - 3} more
+                  </Badge>
+                )}
+              </div>
+
               <div className="flex items-center justify-between pt-2">
-                <span className="text-xs text-muted-foreground dark:text-white/50">
-                  {training.maxParticipants - training.participants} spots left
+                <span className="text-sm font-medium text-foreground dark:text-white">
+                  ₹{training.price.toLocaleString()}
                 </span>
                 <Button variant="outline" size="sm">
                   Enroll Now

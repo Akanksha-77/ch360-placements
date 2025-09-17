@@ -96,7 +96,35 @@ export default function Applications() {
       setLoading(true)
       setError(null)
       const response = await applicationsApi.getAll()
-      setApplications(response || [])
+      const normalizeStatus = (raw: any): Application['status'] => {
+        const s = String(raw || '').toUpperCase()
+        if (s === 'APPLIED') return 'pending'
+        if (s === 'UNDER_REVIEW') return 'under_review'
+        if (s === 'INTERVIEW' || s === 'SHORTLISTED') return 'shortlisted'
+        if (s === 'OFFERED' || s === 'HIRED' || s === 'SELECTED') return 'selected'
+        if (s === 'REJECTED') return 'rejected'
+        return 'under_review'
+      }
+      const mapped: Application[] = (response || []).map((a: any) => ({
+        id: a.id ?? Math.random(),
+        student_name: a.student?.name || a.student_name || 'Unknown',
+        student_email: a.student?.email || a.student_email || '',
+        student_phone: a.student?.phone || a.student_phone || '',
+        student_course: a.student_course || a.student?.course || '',
+        student_year: a.student_year || a.student?.year || '',
+        student_cgpa: a.student_cgpa ?? a.student?.cgpa ?? undefined,
+        company_name: a.company?.name || a.company_name || a.job?.company?.name || '',
+        job_title: a.job?.title || a.job_title || '',
+        job_type: (a.job_type || a.job?.job_type || 'internship') as Application['job_type'],
+        application_date: a.application_date || a.applied_at || new Date().toISOString(),
+        status: normalizeStatus(a.status),
+        resume_url: a.resume_url,
+        cover_letter: a.cover_letter,
+        notes: a.notes,
+        interview_date: a.interview_date,
+        interview_feedback: a.interview_feedback,
+      }))
+      setApplications(mapped)
     } catch (error: any) {
       console.error('Error fetching applications:', error)
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to fetch applications"
@@ -237,10 +265,10 @@ export default function Applications() {
   useEffect(() => {
     const filtered = applications.filter(app => {
       const matchesSearch = 
-        app.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.student_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.job_title.toLowerCase().includes(searchTerm.toLowerCase())
+        String(app.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(app.student_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(app.company_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(app.job_title || '').toLowerCase().includes(searchTerm.toLowerCase())
       
       const matchesStatus = statusFilter === "all" || app.status === statusFilter
       const matchesJobType = jobTypeFilter === "all" || app.job_type === jobTypeFilter

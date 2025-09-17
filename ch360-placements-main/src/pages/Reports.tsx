@@ -1,12 +1,47 @@
-import { useState } from "react"
-import { Download, BarChart3, TrendingUp, Users, Building2, Calendar, FileText } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Download, BarChart3, TrendingUp, Users, Building2, Calendar, FileText, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useQuery } from "@tanstack/react-query"
+import { statisticsApi, analyticsApi, companiesApi, jobsApi, applicationsApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Reports() {
   const [reportType, setReportType] = useState("placement")
   const [timeRange, setTimeRange] = useState("month")
+  const { toast } = useToast()
+
+  // Fetch data based on report type
+  const { data: statisticsData, isLoading: statsLoading } = useQuery({
+    queryKey: ["statistics-overview"],
+    queryFn: () => statisticsApi.getOverview(),
+    enabled: reportType === "placement"
+  })
+
+  const { data: companiesData, isLoading: companiesLoading } = useQuery({
+    queryKey: ["companies-report"],
+    queryFn: () => companiesApi.getAll(),
+    enabled: reportType === "companies"
+  })
+
+  const { data: jobsData, isLoading: jobsLoading } = useQuery({
+    queryKey: ["jobs-report"],
+    queryFn: () => jobsApi.getAll(),
+    enabled: reportType === "internships"
+  })
+
+  const { data: applicationsData, isLoading: applicationsLoading } = useQuery({
+    queryKey: ["applications-report"],
+    queryFn: () => applicationsApi.getAll(),
+    enabled: reportType === "students"
+  })
+
+  const { data: trendsData, isLoading: trendsLoading } = useQuery({
+    queryKey: ["analytics-trends"],
+    queryFn: () => analyticsApi.getTrends(),
+    enabled: reportType === "placement"
+  })
 
   const reportTypes = [
     { value: "placement", label: "Placement Report", icon: TrendingUp },
@@ -21,6 +56,78 @@ export default function Reports() {
     { value: "quarter", label: "This Quarter" },
     { value: "year", label: "This Year" }
   ]
+
+  // Generate report data based on type
+  const generateReportData = () => {
+    switch (reportType) {
+      case "placement":
+        return {
+          title: "Placement Statistics Report",
+          data: statisticsData,
+          loading: statsLoading,
+          metrics: [
+            { label: "Total Students", value: statisticsData?.overview?.total_students || 0, icon: Users },
+            { label: "Placed Students", value: statisticsData?.overview?.placed_students || 0, icon: TrendingUp },
+            { label: "Placement %", value: `${statisticsData?.overview?.placement_percentage || 0}%`, icon: BarChart3 },
+            { label: "Avg Salary", value: `₹${(statisticsData?.overview?.average_salary || 0).toLocaleString()}`, icon: FileText }
+          ]
+        }
+      case "companies":
+        const companies = Array.isArray(companiesData) ? companiesData : (companiesData as any)?.results || []
+        return {
+          title: "Company Analysis Report",
+          data: companiesData,
+          loading: companiesLoading,
+          metrics: [
+            { label: "Total Companies", value: companies.length, icon: Building2 },
+            { label: "Active Companies", value: companies.filter((c: any) => c.is_active).length, icon: TrendingUp },
+            { label: "Avg Rating", value: (companies.reduce((sum: number, c: any) => sum + (c.rating || 0), 0) / companies.length || 0).toFixed(1), icon: BarChart3 },
+            { label: "Total Placements", value: companies.reduce((sum: number, c: any) => sum + (c.total_placements || 0), 0), icon: Users }
+          ]
+        }
+      case "students":
+        const applications = Array.isArray(applicationsData) ? applicationsData : (applicationsData as any)?.results || []
+        return {
+          title: "Student Performance Report",
+          data: applicationsData,
+          loading: applicationsLoading,
+          metrics: [
+            { label: "Total Applications", value: applications.length, icon: FileText },
+            { label: "Selected Students", value: applications.filter((a: any) => a.status === 'selected' || a.status === 'HIRED').length, icon: TrendingUp },
+            { label: "Under Review", value: applications.filter((a: any) => a.status === 'under_review' || a.status === 'UNDER_REVIEW').length, icon: BarChart3 },
+            { label: "Rejected", value: applications.filter((a: any) => a.status === 'rejected' || a.status === 'REJECTED').length, icon: Users }
+          ]
+        }
+      case "internships":
+        const jobs = Array.isArray(jobsData) ? jobsData : (jobsData as any)?.results || []
+        const internships = jobs.filter((job: any) => 
+          job.job_type?.toLowerCase() === 'internship' || 
+          job.title?.toLowerCase().includes('intern')
+        )
+        return {
+          title: "Internship Report",
+          data: jobsData,
+          loading: jobsLoading,
+          metrics: [
+            { label: "Total Internships", value: internships.length, icon: Calendar },
+            { label: "Active Internships", value: internships.filter((i: any) => i.is_active).length, icon: TrendingUp },
+            { label: "Avg Stipend", value: `₹${(internships.reduce((sum: number, i: any) => sum + (i.stipend || i.salary_min || 0), 0) / internships.length || 0).toLocaleString()}`, icon: BarChart3 },
+            { label: "Remote Internships", value: internships.filter((i: any) => i.work_mode === 'REMOTE').length, icon: Building2 }
+          ]
+        }
+      default:
+        return { title: "Report", data: null, loading: false, metrics: [] }
+    }
+  }
+
+  const reportInfo = generateReportData()
+
+  const handleDownloadReport = () => {
+    toast({
+      title: "Report Download",
+      description: `${reportInfo.title} will be downloaded shortly.`,
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -64,9 +171,9 @@ export default function Reports() {
               ))}
             </SelectContent>
           </Select>
-          <Button>
+          <Button onClick={handleDownloadReport} disabled={reportInfo.loading}>
             <Download className="h-4 w-4 mr-2" />
-            Generate Report
+            {reportInfo.loading ? "Loading..." : "Generate Report"}
           </Button>
         </div>
       </div>
@@ -108,26 +215,35 @@ export default function Reports() {
       <Card>
         <CardHeader>
           <CardTitle className="text-foreground dark:text-white">
-            {reportTypes.find(t => t.value === reportType)?.label} - {timeRanges.find(r => r.value === timeRange)?.label}
+            {reportInfo.title} - {timeRanges.find(r => r.value === timeRange)?.label}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {/* Summary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-foreground dark:text-white mb-1">87%</div>
-                <div className="text-sm text-muted-foreground dark:text-white/60">Placement Rate</div>
-              </div>
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-foreground dark:text-white mb-1">₹12.5L</div>
-                <div className="text-sm text-muted-foreground dark:text-white/60">Average Package</div>
-              </div>
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-foreground dark:text-white mb-1">156</div>
-                <div className="text-sm text-muted-foreground dark:text-white/60">Students Placed</div>
+          {reportInfo.loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="h-6 w-6 animate-spin" />
+                <span>Loading report data...</span>
               </div>
             </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {reportInfo.metrics.map((metric, index) => (
+                  <div key={index} className="text-center p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-center mb-2">
+                      <metric.icon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="text-2xl font-bold text-foreground dark:text-white mb-1">
+                      {metric.value}
+                    </div>
+                    <div className="text-sm text-muted-foreground dark:text-white/60">
+                      {metric.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
             {/* Chart Placeholder */}
             <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center">
@@ -155,7 +271,8 @@ export default function Reports() {
                 Export Excel
               </Button>
             </div>
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -6,28 +6,67 @@ import {
   Users,
   TrendingUp,
   Calendar,
-  Target
+  Target,
+  RefreshCw
 } from "lucide-react"
 import { StatsCard } from "@/components/dashboard/stats-card"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { SessionTracker } from "@/components/session-tracker"
+import { useQuery } from "@tanstack/react-query"
+import { companiesApi, jobsApi, applicationsApi, statisticsApi } from "@/lib/api"
 
 export default function Dashboard() {
+  // Fetch real data from APIs
+  const { data: companiesData, isLoading: companiesLoading } = useQuery({
+    queryKey: ["dashboard-companies"],
+    queryFn: () => companiesApi.getAll(),
+  })
+
+  const { data: jobsData, isLoading: jobsLoading } = useQuery({
+    queryKey: ["dashboard-jobs"],
+    queryFn: () => jobsApi.getAll(),
+  })
+
+  const { data: applicationsData, isLoading: applicationsLoading } = useQuery({
+    queryKey: ["dashboard-applications"],
+    queryFn: () => applicationsApi.getAll(),
+  })
+
+  const { data: statisticsData, isLoading: statisticsLoading } = useQuery({
+    queryKey: ["dashboard-statistics"],
+    queryFn: () => statisticsApi.getOverview(),
+  })
+
+  // Process data
+  const companies = Array.isArray(companiesData) ? companiesData : (companiesData as any)?.results || []
+  const jobs = Array.isArray(jobsData) ? jobsData : (jobsData as any)?.results || []
+  const applications = Array.isArray(applicationsData) ? applicationsData : (applicationsData as any)?.results || []
+  
+  const internships = jobs.filter((job: any) => 
+    job.job_type?.toLowerCase() === 'internship' || 
+    job.title?.toLowerCase().includes('intern')
+  )
+
   const statsData = {
-    totalCompanies: 0,
-    activeCompanies: 0,
-    totalJobs: 0,
-    openJobs: 0,
-    totalInternships: 0,
-    openInternships: 0,
-    totalTrainings: 0,
-    ongoingTrainings: 0,
-    totalWorkshops: 0,
-    upcomingWorkshops: 0,
-    totalApplications: 0,
+    totalCompanies: companies.length,
+    activeCompanies: companies.filter((c: any) => c.is_active).length,
+    totalJobs: jobs.length,
+    openJobs: jobs.filter((j: any) => j.is_active).length,
+    totalInternships: internships.length,
+    openInternships: internships.filter((i: any) => i.is_active).length,
+    totalTrainings: 4, // Mock data from Trainings page
+    ongoingTrainings: 2,
+    totalWorkshops: 4, // Mock data from Workshops page
+    upcomingWorkshops: 2,
+    totalApplications: applications.length,
+    placedStudents: applications.filter((a: any) => a.status === 'selected' || a.status === 'HIRED').length,
+    placementRate: statisticsData?.overview?.placement_percentage || 0,
+    averageSalary: statisticsData?.overview?.average_salary || 0,
   }
   
+  const isLoading = companiesLoading || jobsLoading || applicationsLoading || statisticsLoading
+
   const stats = [
     {
       title: "Total Companies",
@@ -51,31 +90,31 @@ export default function Dashboard() {
       change: `${statsData.totalInternships} total`,
       changeType: "positive" as const,
       icon: GraduationCap,
-      description: "Active programs",
+      description: "Available internships",
     },
     {
-      title: "Trainings",
-      value: statsData.ongoingTrainings,
-      change: `${statsData.totalTrainings} total`,
-      changeType: "neutral" as const,
-      icon: BookOpen,
-      description: "Skill development",
-    },
-    {
-      title: "Workshops",
-      value: statsData.upcomingWorkshops,
-      change: `${statsData.totalWorkshops} total`,
+      title: "Placement Rate",
+      value: `${statsData.placementRate}%`,
+      change: `${statsData.placedStudents} placed`,
       changeType: "positive" as const,
-      icon: Users,
-      description: "Upcoming sessions",
+      icon: TrendingUp,
+      description: "Overall placement percentage",
     },
     {
-      title: "Total Applications",
+      title: "Applications",
       value: statsData.totalApplications,
       change: "This month",
       changeType: "positive" as const,
-      icon: TrendingUp,
+      icon: Target,
       description: "Student applications",
+    },
+    {
+      title: "Avg Salary",
+      value: `₹${(statsData.averageSalary / 100000).toFixed(1)}L`,
+      change: "Package offered",
+      changeType: "positive" as const,
+      icon: Calendar,
+      description: "Average salary package",
     },
     {
       title: "Upcoming Events",
@@ -85,15 +124,26 @@ export default function Dashboard() {
       icon: Calendar,
       description: "Scheduled activities",
     },
-    {
-      title: "Placement Rate",
-      value: "87%",
-      change: "On track",
-      changeType: "positive" as const,
-      icon: Target,
-      description: "Success metric",
-    },
   ]
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground dark:text-white">Dashboard</h1>
+          <p className="text-sm md:text-base text-muted-foreground dark:text-white/80">
+            Welcome back! Here's what's happening with placements today.
+          </p>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center space-x-2">
+            <RefreshCw className="h-6 w-6 animate-spin" />
+            <span>Loading dashboard data...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
