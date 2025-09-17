@@ -1,0 +1,15 @@
+{
+  "name": "ch360-placement-root",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "npm run dev --prefix \"ch360-placements-main\"",
+    "build": "npm run build --prefix \"ch360-placements-main\"",
+    "preview": "npm run preview --prefix \"ch360-placements-main\"",
+    "lint": "npm run lint --prefix \"ch360-placements-main\""
+  }
+}
+
+
+
+

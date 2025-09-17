@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#081c6c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- Content Security Policy to block external scripts -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: wss: http://localhost:3000 http://localhost:5000 http://127.0.0.1:8000 https://api.ipify.org https://ipapi.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
+    <title>CampusHub360 - Placement Portal</title>
+    <meta name="description" content="Comprehensive placement management system for educational institutions. Manage companies, job postings, internships, and student placements efficiently." />
+    <meta name="author" content="CampusHub360 Team" />
+
+    <meta property="og:title" content="CampusHub360 - Placement Portal" />
+    <meta property="og:description" content="Comprehensive placement management system for educational institutions" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@campus_hub_360" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Service Worker Cleanup - Disabled for development -->
+    <!-- <script src="/sw-cleanup.js"></script> -->
+    
+    <!-- Simple error handling -->
+    <script>
+      // Simple error suppression for development
+      window.addEventListener('error', function(event) {
+        if (event.error && event.error.message && (
+          event.error.message.includes('WebSocket') ||
+          event.error.message.includes('useRef')
+        )) {
+          event.preventDefault();
+          return false;
+        }
+      });
+      
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && event.reason.message && (
+          event.reason.message.includes('WebSocket') ||
+          event.reason.message.includes('useRef')
+        )) {
+          event.preventDefault();
+          return false;
+        }
+      });
+    </script>
+
+    <!-- React DevTools Recommendation -->
+    <script>
+      // Check if we're in development mode by looking for Vite's dev server
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port) {
+        console.log('%c🚀 React DevTools', 'color: #61dafb; font-size: 20px; font-weight: bold;');
+        console.log('%cFor a better development experience, install React DevTools:', 'color: #666; font-size: 14px;');
+        console.log('%chttps://reactjs.org/link/react-devtools', 'color: #0066cc; font-size: 14px; text-decoration: underline;');
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CampusHub360 Design System */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    
+    /* Custom Colors */
+    --nav-primary: 221 67% 26%; /* #081c6c */
+    --nav-primary-dark: 221 67% 20%; /* #061a5a - darker blue for borders */
+    --nav-foreground: 0 0% 99%; /* #fcfcfc */
+    --accent-primary: 25 100% 45%; /* #e07404 */
+    --accent-hover: 25 100% 40%; /* #c86603 */
+    --success: 142 76% 36%; /* #22c55e */
+    --warning: 38 92% 50%; /* #f59e0b */
+    --destructive: 0 84% 60%; /* #ef4444 */
+    
+    /* Sidebar - Light Mode (Deep Dark Blue like the image) */
+    --sidebar-background: 221 67% 26%; /* #081c6c - same as nav-primary */
+    --sidebar-foreground: 0 0% 99%; /* #fcfcfc - white text */
+    --sidebar-primary: 25 100% 45%; /* #e07404 - orange accent */
+    --sidebar-primary-foreground: 0 0% 100%; /* #ffffff - white text on orange */
+    /* Sidebar hover/active accent -> requested orange */
+    --sidebar-accent: 25 100% 45%; /* #e07404 */
+    --sidebar-accent-foreground: 0 0% 100%; /* white text */
+    --sidebar-border: 221 67% 20%; /* #061a5a - darker blue for borders */
+    --sidebar-ring: 25 100% 45%; /* #e07404 - orange for focus rings */
+  }
+
+  .dark {
+    /* Core Layout - Dark */
+    --background: 231 70% 7%;
+    --foreground: 0 0% 98%;
+
+    /* Cards & Surfaces - Dark */
+    --card: 231 50% 12%;
+    --card-foreground: 0 0% 95%;
+    --card-hover: 231 50% 15%;
+
+    /* Navigation - Black */
+    --nav-primary: 0 0% 0%;
+    --nav-primary-dark: 0 0% 5%;
+    --nav-foreground: 0 0% 98%;
+    --nav-accent: 0 0% 10%;
+    --nav-border: 0 0% 15%;
+
+    /* Accent - Brighter Orange for Dark Mode */
+    --accent-primary: 28 95% 50%;
+    --accent-hover: 28 95% 55%;
+    --accent-light: 28 95% 10%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Status Colors - Dark Adapted */
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 93% 55%;
+    --warning-foreground: 231 70% 7%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Text & Borders - Dark */
+    --muted: 231 30% 18%;
+    --muted-foreground: 231 15% 65%;
+    --border: 231 30% 20%;
+    --input: 231 30% 18%;
+    --ring: 28 95% 50%;
+
+    /* Gradients - Dark */
+    --gradient-primary: linear-gradient(135deg, hsl(231, 70%, 15%), hsl(231, 70%, 20%));
+    --gradient-accent: linear-gradient(135deg, hsl(28, 95%, 50%), hsl(28, 95%, 55%));
+    --gradient-card: linear-gradient(135deg, hsl(231, 50%, 12%), hsl(231, 50%, 15%));
+
+    /* Shadows - Dark */
+    --shadow-sm: 0 1px 2px 0 hsl(0, 0%, 0%, 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(0, 0%, 0%, 0.4);
+    --shadow-lg: 0 10px 15px -3px hsl(0, 0%, 0%, 0.5);
+    --shadow-accent: 0 4px 14px 0 hsl(28, 95%, 50%, 0.4);
+
+    /* Sidebar - Dark */
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 28 95% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 28 95% 50%;
+
+    --radius: 0.75rem;
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .card-hover {
+    @apply bg-muted/50;
+  }
+}
+
+/* Mobile-specific improvements */
+@layer utilities {
+  /* Prevent text selection on mobile */
+  .no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Better touch targets for mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smooth scrolling for mobile */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent zoom on input focus for iOS */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+  
+  /* Better mobile sidebar */
+  @media screen and (max-width: 768px) {
+    .sidebar-mobile {
+      width: 100vw;
+      max-width: 320px;
+    }
+  }
+  
+  /* Mobile-friendly spacing */
+  .mobile-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

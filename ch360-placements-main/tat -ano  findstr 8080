@@ -1,0 +1,28 @@
+[33mcommit 67b61b2c92fb7f58b25ae32483fceb060d8398b4[m
+Author: Akanksha <akankshamadhura12@gmail.com>
+Date:   Thu Sep 4 00:32:38 2025 +0530
+
+    ver2
+
+ index.html                                   |  12 [32m+[m[31m-[m
+ src/components/dashboard/quick-actions.tsx   |   6 [32m+[m[31m-[m
+ src/components/dashboard/recent-activity.tsx |  10 [32m+[m[31m-[m
+ src/components/dashboard/stats-card.tsx      |  14 [32m+[m[31m-[m
+ src/components/layout/header.tsx             | 215 [32m+++++++++++++[m[31m--[m
+ src/components/layout/sidebar.tsx            |  32 [32m++[m[31m-[m
+ src/components/ui/command.tsx                |   6 [32m+[m[31m-[m
+ src/components/ui/sidebar.tsx                |   4 [32m+[m[31m-[m
+ src/index.css                                |  98 [32m+++++[m[31m--[m
+ src/pages/AdminOffers.tsx                    | 303 [32m+++++++++++++++[m[31m-----[m
+ src/pages/Companies.tsx                      | 321 [32m++++++++++++[m[31m----------[m
+ src/pages/Dashboard.tsx                      |   4 [32m+[m[31m-[m
+ src/pages/Index.tsx                          |  32 [32m+[m[31m--[m
+ src/pages/Internships.tsx                    | 303 [32m+++++++++++[m[31m---------[m
+ src/pages/Jobs.tsx                           | 397 [32m+++++++++++++[m[31m--------------[m
+ src/pages/Login.tsx                          | 191 [32m++++++++[m[31m-----[m
+ src/pages/NotFound.tsx                       |  71 [32m+++[m[31m--[m
+ src/pages/Reports.tsx                        | 260 [32m++++++++++++++[m[31m----[m
+ src/pages/StudentPortal.tsx                  | 357 [32m++++++++++++++++++++[m[31m----[m
+ src/pages/Trainings.tsx                      | 241 [32m+++++++++++[m[31m-----[m
+ src/pages/Workshops.tsx                      | 238 [32m+++++++++++[m[31m-----[m
+ 21 files changed, 2133 insertions(+), 982 deletions(-)
