@@ -72,7 +72,7 @@ export default function Reports() {
             { label: "Avg Salary", value: `₹${(statisticsData?.overview?.average_salary || 0).toLocaleString()}`, icon: FileText }
           ]
         }
-      case "companies":
+      case "companies": {
         const companies = Array.isArray(companiesData) ? companiesData : (companiesData as any)?.results || []
         return {
           title: "Company Analysis Report",
@@ -85,7 +85,8 @@ export default function Reports() {
             { label: "Total Placements", value: companies.reduce((sum: number, c: any) => sum + (c.total_placements || 0), 0), icon: Users }
           ]
         }
-      case "students":
+      }
+      case "students": {
         const applications = Array.isArray(applicationsData) ? applicationsData : (applicationsData as any)?.results || []
         return {
           title: "Student Performance Report",
@@ -98,7 +99,8 @@ export default function Reports() {
             { label: "Rejected", value: applications.filter((a: any) => a.status === 'rejected' || a.status === 'REJECTED').length, icon: Users }
           ]
         }
-      case "internships":
+      }
+      case "internships": {
         const jobs = Array.isArray(jobsData) ? jobsData : (jobsData as any)?.results || []
         const internships = jobs.filter((job: any) => 
           job.job_type?.toLowerCase() === 'internship' || 
@@ -115,6 +117,7 @@ export default function Reports() {
             { label: "Remote Internships", value: internships.filter((i: any) => i.work_mode === 'REMOTE').length, icon: Building2 }
           ]
         }
+      }
       default:
         return { title: "Report", data: null, loading: false, metrics: [] }
     }
