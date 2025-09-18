@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
+  "buildCommand": "npm run build --prefix ch360-placements-main",
+  "installCommand": "npm install --prefix ch360-placements-main",
   "outputDirectory": "ch360-placements-main/dist"
 }
