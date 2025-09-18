@@ -2,5 +2,9 @@
   "version": 2,
   "buildCommand": "npm run build --prefix ch360-placements-main",
   "installCommand": "npm install --prefix ch360-placements-main",
-  "outputDirectory": "ch360-placements-main/dist"
+  "outputDirectory": "ch360-placements-main/dist",
+  "env": {
+    "VITE_MOCK_AUTH": "true",
+    "VITE_ENABLE_GEO": "false"
+  }
 }
